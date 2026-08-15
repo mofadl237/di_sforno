@@ -1,4 +1,9 @@
 {
+  "NotFound": {
+    "title": "الصفحة غير موجودة",
+    "description": "الصفحة التي تبحث عنها غير موجودة.",
+    "backHome": "العودة إلى الرئيسية"
+  },
   "offers": {
     "types": {
       "percentage": "خصم {value}%",
