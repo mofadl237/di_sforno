@@ -43,8 +43,12 @@ export const RESTORA_API_ROOT = API_URL;
 export const publicApi = createApi({
   reducerPath: "restoraPublicApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/api/v1/public`,
-    prepareHeaders: (headers) => {
+    // Same-origin path — proxied to the Restora Public API by a rewrite in
+    // next.config.ts. The API host sends no CORS headers, so cross-origin
+    // fetches are blocked by the browser; proxying keeps the browser request
+    // same-origin while the server forwards to the Public API.
+    baseUrl: "/api/v1/public",
+    prepareHeaders: (headers)=> {
       if (RESTAURANT_ID) headers.set("x-restaurant-id", RESTAURANT_ID);
       return headers;
     },
