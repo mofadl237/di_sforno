@@ -1,7 +1,4 @@
-import BestSeller from "@/src/Components/BestSeller/BestSeller";
-import Slider from "@/src/Components/Slider/Slider";
-import { FloatingMenuCta } from "@/src/Components/Shared/FloatingMenuCta";
-import { PublicOffers } from "@/src/Components/Offers/PublicOffers";
+import { HomeClient } from "@/src/Components/Home/HomeClient";
 import { TableResolver } from "@/src/Components/Table/TableResolver";
 
 interface IHomePageProps {
@@ -14,12 +11,7 @@ export default async function Home({ searchParams }: IHomePageProps) {
   return (
     <>
       <TableResolver tableId={params.tableId} />
-      <main className="flex min-h-screen w-full flex-col justify-center">
-        <Slider />
-        <BestSeller />
-        <PublicOffers />
-        <FloatingMenuCta />
-      </main>
+      <HomeClient />
     </>
   );
 }

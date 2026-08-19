@@ -54,8 +54,20 @@ export function apiErrorMessage(
   error: unknown,
   fallback = "Something went wrong. Please try again.",
 ): string {
-  const body = (error as { data?: IApiErrorBody } | undefined)?.data;
-  return body?.error?.message || fallback;
+  const body = (error as { data?: unknown })?.data;
+  if (!body) return fallback;
+
+  // Restora envelope: { success, error: { message } }
+  const envelope = body as { error?: { message?: string } };
+  if (envelope.error?.message) return envelope.error.message;
+
+  // NestJS validation pipe: { statusCode, message: string | string[], error }
+  const nest = body as { message?: string | string[] };
+  if (nest.message) {
+    return Array.isArray(nest.message) ? nest.message.join(", ") : nest.message;
+  }
+
+  return fallback;
 }
 
 /** Pull the machine-readable error code out of an RTK Query error. */
@@ -305,6 +317,20 @@ export interface ICreateOrderItem {
   note?: string;
 }
 
+/** An offer as a single logical transaction in the order payload. */
+export interface ICreateOrderOffer {
+  offerId: string;
+  offerType: string;
+  offerName: string;
+  quantity: number;
+  products: {
+    productId: string;
+    productName: string;
+    role: "trigger" | "reward" | "included";
+    basePrice: number;
+  }[];
+}
+
 export interface ICreateOrderInput {
   customerName: string;
   customerPhone: string;
@@ -319,6 +345,8 @@ export interface ICreateOrderInput {
   tableId?: string | null;
   tableNumber?: string | null;
   items: ICreateOrderItem[];
+  /** Offer transactions — each is ONE logical offer, not individual products. */
+  offers?: ICreateOrderOffer[];
 }
 
 export interface ICreateOrderResult {

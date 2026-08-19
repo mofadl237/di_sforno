@@ -16,7 +16,17 @@
     },
     "endsAt": "Ends {date}",
     "view": "View offer",
-    "empty": "No active offers right now"
+    "empty": "No active offers right now",
+    "includedProducts": "Included Products",
+    "free": "FREE",
+    "originalPrice": "Original Price",
+    "discount": "Discount",
+    "offerPrice": "Offer Price",
+    "addOfferToCart": "Add Offer to Cart",
+    "added": "Added!",
+    "addedToCart": "{name} added to your cart",
+    "youSave": "You save",
+    "savingsPercent": "Savings"
   },
   "documents": {
     "invoice": "Invoice",
@@ -136,6 +146,32 @@
     "offers": {
       "title": "Limited-Time Offers",
       "subTitle": "Deals and bundles available right now"
+    }
+  },
+  "home": {
+    "categories": {
+      "eyebrow": "Browse by category",
+      "title": "Our Menu"
+    },
+    "story": {
+      "kicker": "Our Story",
+      "titleStart": "Crafted with Passion,",
+      "titleHighlight": "Served with Love",
+      "description": "Since day one, we have been redefining great flavors in the heart of the city — one handcrafted dish at a time.",
+      "exploreMenu": "Explore Menu",
+      "foundedYear": "2026",
+      "foundedLabel": "Founded",
+      "brandLine": "Our Kitchen",
+      "imageAlt": "Our kitchen — our story",
+      "paragraph1": "It all started with a simple family recipe, passed down through generations and perfected over the years. We opened our doors with a single oven and a dream to share great food with our community.",
+      "paragraph2": "Today, every dish that leaves our kitchen carries that same devotion — fresh, carefully sourced ingredients and recipes that respect tradition."
+    },
+    "cta": {
+      "kicker": "Ready to taste?",
+      "title": "Explore Our Full Menu",
+      "description": "From our signature dishes to seasonal specials — every plate is made with care and pride.",
+      "viewMenu": "View Menu",
+      "bookTable": "Book a Table"
     }
   },
   "hero": {

@@ -17,7 +17,10 @@ import { RootState } from "@/src/store/store";
 export function CartButton() {
   const t = useTranslations("common");
   const items = useSelector((state: RootState) => state.cart.items);
-  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  const offerGroups = useSelector((state: RootState) => state.cart.offerGroups);
+  const count =
+    items.reduce((sum, item) => sum + item.quantity, 0) +
+    offerGroups.reduce((sum, og) => sum + og.quantity, 0);
 
   const linkRef = useRef<HTMLAnchorElement | null>(null);
   const [pulse, setPulse] = useState(0);

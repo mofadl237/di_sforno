@@ -7,11 +7,13 @@ import { useTranslations } from "next-intl";
 
 interface IProps {
   itemCount: number;
+  offerGroupCount?: number;
   onClearCart: () => void;
 }
 
-const CartHeader = ({ itemCount, onClearCart }: IProps) => {
+const CartHeader = ({ itemCount, offerGroupCount = 0, onClearCart }: IProps) => {
   const t = useTranslations("cart");
+  const totalCount = itemCount + offerGroupCount;
 
   return (
     <motion.div
@@ -27,12 +29,12 @@ const CartHeader = ({ itemCount, onClearCart }: IProps) => {
             {t("yourOrder")}
           </h2>
           <p className="text-xs text-muted-foreground font-medium">
-            {t("itemsInCart", { count: itemCount })}
+            {t("itemsInCart", { count: totalCount })}
           </p>
         </div>
       </div>
 
-      {itemCount > 0 && (
+      {totalCount > 0 && (
         <button
           onClick={onClearCart}
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground border border-border transition-colors duration-200 hover:border-destructive/60 hover:text-destructive hover:bg-destructive/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

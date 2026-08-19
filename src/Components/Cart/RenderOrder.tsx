@@ -15,10 +15,14 @@ import {
   setDeliveryZone,
   clearDeliveryZone,
   clearDineInTable,
+  removeOfferGroup,
+  increaseOfferQuantity,
+  decreaseOfferQuantity,
   type ICartProduct,
   type ICartDeliveryZone,
 } from "@/src/store/features/CartSlice";
 import { calcSubtotal, cartItemToLine, calculateOrderSummary } from "@/lib/utils";
+import type { IPricingLineInput } from "@/src/lib/pricing";
 import { isValidEgyptianPhone } from "@/lib/phoneValidation";
 import { motion } from "framer-motion";
 import { pageVariants } from "./ShoppingCart/CartAnimations";
@@ -32,6 +36,7 @@ import {
 import {
   apiErrorMessage,
   type ICreateOrderItem,
+  type ICreateOrderOffer,
 } from "@/src/store/api/types";
 import { useActiveTable } from "@/src/Providers/TableProvider";
 
@@ -42,6 +47,7 @@ import CartSummary from "./ShoppingCart/CartSummary";
 import CheckoutForm, { ICheckoutFields } from "./ShoppingCart/CheckoutForm";
 import SubmitOrderButton from "./ShoppingCart/SubmitOrderButton";
 import EmptyCart from "./ShoppingCart/EmptyCart";
+import { CartOfferGroup } from "./ShoppingCart/CartOfferGroup";
 import { AddToCartDialog } from "@/src/Components/Product/AddToCartDialog";
 import type { IProductWithOptions } from "@/src/Components/Product/AddToCartDialog/types";
 import { DeliveryZoneSelector } from "@/src/Components/Cart/DeliveryZones/DeliveryZoneSelector";
@@ -56,7 +62,7 @@ const RenderOrder = () => {
   const t = useTranslations("cart");
   const { clearTable } = useActiveTable();
 
-  const { items, deliveryZone = null, table = null, tax = 0, discount = 0 } =
+  const { items, offerGroups = [], deliveryZone = null, table = null, tax = 0, discount = 0 } =
     useSelector((state: RootState) => state.cart);
 
   const isDineIn = table !== null;
@@ -115,7 +121,11 @@ const RenderOrder = () => {
     }
   }, [zones, deliveryZone, dispatch]);
 
-  const subtotal = calcSubtotal(items);
+  const offersTotal = offerGroups.reduce(
+    (sum, og) => sum + og.finalPrice * og.quantity,
+    0,
+  );
+  const subtotal = calcSubtotal(items) + offersTotal;
 
   // Delivery fee always flows through the Pricing Engine (never in JSX).
   const deliveryInput = isDineIn
@@ -131,8 +141,17 @@ const RenderOrder = () => {
         }
       : { fallbackFee: 0, freeDeliveryThreshold, subtotal };
 
+  // Include offer groups as a single synthetic line so the summary's subtotal
+  // and total incorporate the offer final price alongside normal items.
+  const offerLine: IPricingLineInput | null =
+    offersTotal > 0
+      ? { basePrice: offersTotal, options: [], quantity: 1 }
+      : null;
+
   const summary = calculateOrderSummary({
-    lines: items.map(cartItemToLine),
+    lines: offerLine
+      ? [...items.map(cartItemToLine), offerLine]
+      : items.map(cartItemToLine),
     delivery: deliveryInput,
     discount,
     tax,
@@ -169,6 +188,21 @@ const RenderOrder = () => {
   );
 
   const handleClearCart = useCallback(() => dispatch(clearCart()), [dispatch]);
+
+  const handleRemoveOffer = useCallback(
+    (id: string) => dispatch(removeOfferGroup(id)),
+    [dispatch],
+  );
+
+  const handleIncreaseOffer = useCallback(
+    (id: string) => dispatch(increaseOfferQuantity(id)),
+    [dispatch],
+  );
+
+  const handleDecreaseOffer = useCallback(
+    (id: string) => dispatch(decreaseOfferQuantity(id)),
+    [dispatch],
+  );
 
   const handleLeaveTable = useCallback(() => {
     clearTable();
@@ -245,27 +279,61 @@ const RenderOrder = () => {
 
     setLoading(true);
 
+    // Build order payload outside try so catch can log it on failure.
+    // Normal cart products
+    const normalItems: ICreateOrderItem[] = items.map((item) => ({
+      productId: item.productId,
+      productName: item.productName,
+      productImage: item.productImage,
+      quantity: item.quantity,
+      basePrice: item.basePrice,
+      variant: item.variant
+        ? {
+            id: item.variant.id,
+            name: item.variant.name,
+            price: item.variant.price,
+          }
+        : undefined,
+      options: (item.options ?? []).map((option) => ({
+        id: option.id,
+        name: option.name,
+        price: option.price,
+      })),
+      note: item.note,
+    }));
+
+    // Offer participating products must also appear in items[] so the
+    // backend's "items must be a non-empty array" validation passes even
+    // for offer-only carts. The `offers` array carries the offer metadata.
+    const offerProductItems: ICreateOrderItem[] = offerGroups.flatMap((og) =>
+      og.products.map((p) => ({
+        productId: p.productId,
+        productName: p.productName,
+        productImage: p.productImage,
+        quantity: og.quantity,
+        basePrice: p.basePrice,
+      })),
+    );
+
+    const orderItems: ICreateOrderItem[] = [
+      ...normalItems,
+      ...offerProductItems,
+    ];
+
+    const orderOffers: ICreateOrderOffer[] = offerGroups.map((og) => ({
+      offerId: og.offerId,
+      offerType: og.offerType,
+      offerName: og.offerName,
+      quantity: og.quantity,
+      products: og.products.map((p) => ({
+        productId: p.productId,
+        productName: p.productName,
+        role: p.role,
+        basePrice: p.basePrice,
+      })),
+    }));
+
     try {
-      const orderItems: ICreateOrderItem[] = items.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        productImage: item.productImage,
-        quantity: item.quantity,
-        basePrice: item.basePrice,
-        variant: item.variant
-          ? {
-              id: item.variant.id,
-              name: item.variant.name,
-              price: item.variant.price,
-            }
-          : undefined,
-        options: (item.options ?? []).map((option) => ({
-          id: option.id,
-          name: option.name,
-          price: option.price,
-        })),
-        note: item.note,
-      }));
 
       const result = await createOrder({
         customerName: checkoutFields.customerName,
@@ -274,6 +342,7 @@ const RenderOrder = () => {
         city: isDineIn ? "" : checkoutFields.city,
         notes: checkoutFields.notes || undefined,
         items: orderItems,
+        offers: orderOffers.length > 0 ? orderOffers : undefined,
         deliveryZoneId: isDineIn ? null : (deliveryZone?.id ?? null),
         tax,
         discount,
@@ -293,6 +362,34 @@ const RenderOrder = () => {
       dispatch(clearCart());
       router.push(`/orders/${result.orderId}`);
     } catch (err) {
+      // ── Temporary diagnostic: capture the real backend error ───────────
+      const rtqErr = err as {
+        status?: number | string;
+        data?: unknown;
+        error?: string;
+        message?: string;
+      };
+      console.error("[ORDER CREATE FAILED]", {
+        status: rtqErr.status,
+        data: rtqErr.data,
+        rawError: rtqErr.error ?? rtqErr.message ?? String(err),
+        payload: {
+          itemCount: orderItems.length,
+          offerCount: orderOffers.length,
+          items: orderItems.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            basePrice: i.basePrice,
+          })),
+          offers: orderOffers.map((o) => ({
+            offerId: o.offerId,
+            offerType: o.offerType,
+            quantity: o.quantity,
+            productCount: o.products.length,
+          })),
+        },
+      });
+      // ── End diagnostic ────────────────────────────────────────────────
       toast.error(apiErrorMessage(err, t("errorSomethingWrong")));
     } finally {
       setLoading(false);
@@ -301,6 +398,7 @@ const RenderOrder = () => {
     loading,
     checkoutFields,
     items,
+    offerGroups,
     deliveryZone,
     zones.length,
     tax,
@@ -315,12 +413,13 @@ const RenderOrder = () => {
     createOrder,
   ]);
 
-  if (!items.length) {
+  if (!items.length && !offerGroups.length) {
     return <EmptyCart />;
   }
 
   const isSubmitDisabled =
     restaurantOpen === false ||
+    (!items.length && !offerGroups.length) ||
     !checkoutFields.customerName.trim() ||
     !checkoutFields.phone.trim() ||
     (!isDineIn &&
@@ -345,6 +444,7 @@ const RenderOrder = () => {
           <div className="min-w-0 space-y-6">
             <CartHeader
               itemCount={items.length}
+              offerGroupCount={offerGroups.length}
               onClearCart={handleClearCart}
             />
             <CartItems
@@ -355,6 +455,21 @@ const RenderOrder = () => {
               onDecrease={handleDecrease}
               editLoading={editLoading}
             />
+
+            {/* Offer Groups — each is ONE logical transaction */}
+            {offerGroups.length > 0 && (
+              <div className="space-y-3">
+                {offerGroups.map((group) => (
+                  <CartOfferGroup
+                    key={group.id}
+                    group={group}
+                    onRemove={handleRemoveOffer}
+                    onIncrease={handleIncreaseOffer}
+                    onDecrease={handleDecreaseOffer}
+                  />
+                ))}
+              </div>
+            )}
 
             {!isDineIn &&
               (zonesLoading ? (
