@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Flame, Trash2, Minus, Plus, Tag, Gift, Package, UtensilsCrossed, Baby, Users } from "lucide-react";
 import { type ICartOfferGroup } from "@/src/store/features/CartSlice";
@@ -109,9 +110,12 @@ export function CartOfferGroup({
               className="flex items-center gap-2 rounded-lg border border-border/40 bg-muted/30 px-2 py-1.5"
             >
               {product.productImage ? (
-                <img
+                <Image
                   src={product.productImage}
                   alt={product.productName}
+                  width={32}
+                  height={32}
+                  unoptimized
                   className="h-8 w-8 rounded-md object-cover"
                 />
               ) : (

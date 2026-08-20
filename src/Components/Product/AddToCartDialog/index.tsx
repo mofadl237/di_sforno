@@ -88,7 +88,7 @@ export function AddToCartDialog({
   const [shake, setShake] = useState(false);
 
   // Reset selection whenever the dialog opens for a (potentially different) product
-  const [prevOpen, setPrevOpen] = useState(isOpen);
+  const [prevOpen, setPrevOpen] = useState(false);
   if (isOpen !== prevOpen) {
     setPrevOpen(isOpen);
     if (isOpen) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useSyncExternalStore } from "react";
 import { useParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { notFound } from "next/navigation";
@@ -19,17 +20,32 @@ export default function OrderDetailsPage() {
   const params = useParams<{ orderId: string }>();
   const locale = useLocale();
 
-  const { data: order, isLoading, isError } = useGetOrderByIdQuery({
-    id: params.orderId,
-    locale,
-  });
-  const { data: settings } = useGetRestaurantQuery({ locale });
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
-  if (isError || (order === null && !isLoading)) {
-    notFound();
-  }
+  const orderId = params?.orderId;
 
-  if (isLoading || !order || !settings) {
+  const { data: order, isLoading, isError } = useGetOrderByIdQuery(
+    { id: orderId ?? "", locale },
+    { skip: !mounted || !orderId },
+  );
+  const { data: settings } = useGetRestaurantQuery(
+    { locale },
+    { skip: !mounted },
+  );
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (isLoading) return;
+    if (isError || order === null || order === undefined) {
+      notFound();
+    }
+  }, [mounted, isLoading, isError, order, orderId]);
+
+  if (!mounted || isLoading || !order || !settings) {
     return (
       <div className="container marginSection flex min-h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />

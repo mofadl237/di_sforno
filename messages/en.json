@@ -149,6 +149,12 @@
     }
   },
   "home": {
+    "promoBanner": {
+      "eyebrow": "Limited Time Offer",
+      "copyCode": "Copy Code",
+      "copied": "Copied!",
+      "shopNow": "Shop Now"
+    },
     "categories": {
       "eyebrow": "Browse by category",
       "title": "Our Menu"
@@ -300,7 +306,27 @@
     "dineInDetailsDesc": "You're ordering from a table inside the restaurant.",
     "tableLabel": "Table {number}",
     "leaveTable": "Leave table",
-    "tableLeft": "You have left the table."
+    "tableLeft": "You have left the table.",
+    "promoCode": {
+      "title": "Promo Code",
+      "placeholder": "Enter promo code",
+      "apply": "Apply",
+      "applying": "Applying…",
+      "remove": "Remove",
+      "applied": "{code} applied",
+      "discountLabel": "{type} OFF",
+      "discountValue": "−{amount}",
+      "invalid": "Invalid promo code",
+      "expired": "This offer has expired",
+      "notStarted": "This offer is not active yet",
+      "disabled": "This offer is currently unavailable",
+      "exhausted": "This offer is no longer available",
+      "alreadyUsed": "You have already used this promo code",
+      "firstOrderOnly": "This offer is only available on your first order",
+      "minimumOrderNotMet": "Minimum order of {amount} required",
+      "error": "Couldn't validate promo code. Please try again.",
+      "calculatedAtCheckout": "Calculated at checkout"
+    }
   },
   "trackOrder": {
     "title": "Track Your Orders",

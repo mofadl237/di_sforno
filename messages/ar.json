@@ -149,6 +149,12 @@
     }
   },
   "home": {
+    "promoBanner": {
+      "eyebrow": "عرض لفترة محدودة",
+      "copyCode": "نسخ الكود",
+      "copied": "تم النسخ!",
+      "shopNow": "تسوق الآن"
+    },
     "categories": {
       "eyebrow": "تصفح حسب التصنيف",
       "title": "قائمتنا"
@@ -300,7 +306,27 @@
     "dineInDetailsDesc": "أنت تطلب من طاولة داخل المطعم.",
     "tableLabel": "طاولة {number}",
     "leaveTable": "مغادرة الطاولة",
-    "tableLeft": "تمت مغادرة الطاولة."
+    "tableLeft": "تمت مغادرة الطاولة.",
+    "promoCode": {
+      "title": "كود الخصم",
+      "placeholder": "أدخل كود الخصم",
+      "apply": "تطبيق",
+      "applying": "جارٍ التطبيق…",
+      "remove": "إزالة",
+      "applied": "تم تطبيق {code}",
+      "discountLabel": "خصم {type}",
+      "discountValue": "−{amount}",
+      "invalid": "كود خصم غير صالح",
+      "expired": "انتهت صلاحية هذا العرض",
+      "notStarted": "هذا العرض غير نشط بعد",
+      "disabled": "هذا العرض غير متاح حالياً",
+      "exhausted": "هذا العرض لم يعد متاحاً",
+      "alreadyUsed": "لقد استخدمت كود الخصم هذا من قبل",
+      "firstOrderOnly": "هذا العرض متاح فقط في طلبك الأول",
+      "minimumOrderNotMet": "الحد الأدنى للطلب هو {amount}",
+      "error": "تعذر التحقق من كود الخصم. يرجى المحاولة مرة أخرى.",
+      "calculatedAtCheckout": "يُحسب عند إتمام الطلب"
+    }
   },
   "trackOrder": {
     "title": "تتبع طلباتك",

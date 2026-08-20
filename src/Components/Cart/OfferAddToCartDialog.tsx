@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { ShoppingCart, Check, Flame, Tag, Gift, Package, UtensilsCrossed, Baby, Users } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { addOfferGroup, type ICartOfferGroup } from "@/src/store/features/CartSlice";
@@ -64,9 +65,12 @@ function ProductRow({
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card/50 p-3">
       {line.productImage ? (
-        <img
+        <Image
           src={line.productImage}
           alt={line.productName}
+          width={44}
+          height={44}
+          unoptimized
           className="h-11 w-11 shrink-0 rounded-lg object-cover"
         />
       ) : (
@@ -257,9 +261,12 @@ export function OfferAddToCartDialog({
                 }}
                 className="relative overflow-hidden rounded-xl bg-muted"
               >
-                <img
+                <Image
                   src={offer.image}
                   alt={offer.name}
+                  width={600}
+                  height={180}
+                  unoptimized
                   className="w-full object-cover"
                   style={{ maxHeight: "180px" }}
                 />

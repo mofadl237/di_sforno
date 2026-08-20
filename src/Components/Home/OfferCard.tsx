@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -202,9 +203,12 @@ export function PremiumOfferCard({ offer, index }: OfferCardProps) {
         {/* Image */}
         {offer.image && (
           <div className="relative mx-4 -mt-1 aspect-[16/9] overflow-hidden rounded-xl bg-muted">
-            <img
+            <Image
               src={offer.image}
               alt={offer.name}
+              width={600}
+              height={338}
+              unoptimized
               className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div

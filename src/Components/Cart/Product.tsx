@@ -4,8 +4,6 @@ import { ICartProduct } from "@/src/store/features/CartSlice";
 import Extra from "./Extra";
 import {
   calcTotalPriceFromOptions,
-  calcTotalPriceFromVariant,
-  calcTotalPriceOneProduct,
   formattePrice,
 } from "@/lib/utils";
 import Image from "next/image";
@@ -32,12 +30,10 @@ const Product = ({
 }: IProps) => {
   const t = useTranslations("cart");
   const optionsTotal = calcTotalPriceFromOptions(item.options ?? []);
-  const variantTotal = calcTotalPriceFromVariant(
-    item.basePrice,
-    item.variant?.price ?? 0,
-  );
-  const lineTotal =
-    calcTotalPriceOneProduct(variantTotal, optionsTotal) * item.quantity;
+  const variantDelta = item.variant?.price ?? 0;
+  const unitPrice =
+    item.basePrice + variantDelta + optionsTotal;
+  const lineTotal = unitPrice * item.quantity;
 
   return (
     <div className="flex gap-3.5">
@@ -99,39 +95,6 @@ const Product = ({
           </div>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-  <span>
-    Qty: <strong className="text-foreground">{item.quantity}</strong>
-  </span>
-
-  <span className="opacity-40">•</span>
-
-  <span>
-    Base:{" "}
-    <strong className="text-foreground">
-      {formattePrice(item.basePrice)}
-    </strong>
-  </span>
-
-  {item.variant && (
-    <>
-      <span className="opacity-40">•</span>
-      <span>
-        +{formattePrice(item.variant.price)}
-      </span>
-    </>
-  )}
-  
-</div>
-
-<div className="mt-2 flex items-center justify-between">
-<p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {t("extras")}
-      </p>
-  <span className="text-sm font-bold text-foreground">
-    {formattePrice(variantTotal)}
-  </span>
-</div>
         {/* Extras */}
         {item.options && item.options.length > 0 && (
           <div className="mt-2">
@@ -139,7 +102,7 @@ const Product = ({
           </div>
         )}
 
-        {/* Bottom row: quantity controls + line total */}
+        {/* Bottom row: quantity controls + qty × unit price = line total */}
         <div className="mt-3 flex items-center justify-between gap-2">
           {/* Quantity stepper */}
           {onIncrease && onDecrease && (
@@ -174,9 +137,13 @@ const Product = ({
             </div>
           )}
 
-          {/* Line total */}
-          <span className="ml-auto text-base font-bold text-primary">
-            {formattePrice(lineTotal)}
+          {/* qty × unit price → line total */}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {item.quantity} × {formattePrice(unitPrice)}
+            <span className="mx-1.5">=</span>
+            <span className="text-base font-bold text-primary">
+              {formattePrice(lineTotal)}
+            </span>
           </span>
         </div>
       </div>

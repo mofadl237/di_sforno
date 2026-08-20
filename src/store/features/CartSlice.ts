@@ -83,12 +83,30 @@ export interface ICartTable {
   number: string;
 }
 
+/**
+ * Applied promo code snapshot from server validation.
+ * The discount preview is for UI display only — the server revalidates
+ * and recalculates during order creation.
+ */
+export interface ICartPromoCode {
+  code: string;
+  offerId: string;
+  offerName: string;
+  offerType: string;
+  discountType: string;
+  discountValue: number;
+  /** Server-computed estimated discount for preview display. */
+  estimatedDiscount: number;
+}
+
 interface ICartState {
   items: ICartProduct[];
   offerGroups: ICartOfferGroup[];
   deliveryZone: ICartDeliveryZone | null;
   /** Dine-in table context established by scanning a QR code. */
   table: ICartTable | null;
+  /** Applied promo code (order-level discount validated by server). */
+  promoCode: ICartPromoCode | null;
   /** Applied discounts (future: coupons) — an input, not a derived value. */
   discount: number;
   /** Tax input (flat amount today). */
@@ -98,6 +116,7 @@ interface ICartState {
 interface IPersistedCart {
   items: ICartProduct[];
   offerGroups?: ICartOfferGroup[];
+  promoCode?: ICartPromoCode | null;
   deliveryZone: ICartDeliveryZone | null;
   table: ICartTable | null;
 }
@@ -105,10 +124,11 @@ interface IPersistedCart {
 const persist = (
   items: ICartProduct[],
   offerGroups: ICartOfferGroup[],
+  promoCode: ICartPromoCode | null,
   deliveryZone: ICartDeliveryZone | null,
   table: ICartTable | null,
 ) => {
-  const payload: IPersistedCart = { items, offerGroups, deliveryZone, table };
+  const payload: IPersistedCart = { items, offerGroups, promoCode, deliveryZone, table };
   setLocalStorage(JSON.stringify(payload));
 };
 
@@ -119,6 +139,7 @@ const initialState: ICartState = {
   offerGroups: [],
   deliveryZone: null,
   table: null,
+  promoCode: null,
   discount: 0,
   tax: 0,
 };
@@ -143,7 +164,7 @@ export const cartSlice = createSlice({
         state.items.push(incoming);
       }
 
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Replace an existing item by its cart id (used by Edit flow). */
@@ -151,20 +172,20 @@ export const cartSlice = createSlice({
       const idx = state.items.findIndex((i) => i.id === action.payload.id);
       if (idx !== -1) {
         state.items[idx] = action.payload;
-        persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+        persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
       }
     },
 
     removeItem: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     increaseQuantity: (state, action: PayloadAction<string>) => {
       const item = state.items.find((i) => i.id === action.payload);
       if (item) {
         item.quantity += 1;
-        persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+        persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
       }
     },
 
@@ -177,7 +198,7 @@ export const cartSlice = createSlice({
         } else {
           state.items[idx].quantity -= 1;
         }
-        persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+        persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
       }
     },
 
@@ -196,7 +217,7 @@ export const cartSlice = createSlice({
         state.offerGroups.push(incoming);
       }
 
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Remove an offer group by its cart-entity ID. */
@@ -204,7 +225,7 @@ export const cartSlice = createSlice({
       state.offerGroups = state.offerGroups.filter(
         (og) => og.id !== action.payload,
       );
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Increase the quantity of an offer group (whole offer × N). */
@@ -212,7 +233,7 @@ export const cartSlice = createSlice({
       const og = state.offerGroups.find((g) => g.id === action.payload);
       if (og) {
         og.quantity += 1;
-        persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+        persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
       }
     },
 
@@ -225,8 +246,22 @@ export const cartSlice = createSlice({
         } else {
           state.offerGroups[idx].quantity -= 1;
         }
-        persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+        persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
       }
+    },
+
+    // ─── Promo Code ────────────────────────────────────────────────────────
+
+    /** Apply a validated promo code to the cart. */
+    setPromoCode: (state, action: PayloadAction<ICartPromoCode>) => {
+      state.promoCode = action.payload;
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
+    },
+
+    /** Remove the applied promo code. */
+    clearPromoCode: (state) => {
+      state.promoCode = null;
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     // ─── Zone / Table / Cart ───────────────────────────────────────────────
@@ -234,35 +269,36 @@ export const cartSlice = createSlice({
     /** Select / change the checkout delivery zone. */
     setDeliveryZone: (state, action: PayloadAction<ICartDeliveryZone>) => {
       state.deliveryZone = action.payload;
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Remove the delivery zone selection (cart emptied, etc). */
     clearDeliveryZone: (state) => {
       state.deliveryZone = null;
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Set the active dine-in table from the QR entry flow. */
     setDineInTable: (state, action: PayloadAction<ICartTable>) => {
       state.table = action.payload;
       state.deliveryZone = null;
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Clear the active dine-in table. */
     clearDineInTable: (state) => {
       state.table = null;
-      persist(state.items, state.offerGroups, state.deliveryZone, state.table);
+      persist(state.items, state.offerGroups, state.promoCode, state.deliveryZone, state.table);
     },
 
     /** Clear the entire cart. */
     clearCart: (state) => {
       state.items = [];
       state.offerGroups = [];
+      state.promoCode = null;
       state.deliveryZone = null;
       state.table = null;
-      persist([], [], null, null);
+      persist([], [], null, null, null);
     },
 
     /**
@@ -278,11 +314,13 @@ export const cartSlice = createSlice({
       if (Array.isArray(payload)) {
         state.items = payload;
         state.offerGroups = [];
+        state.promoCode = null;
         state.deliveryZone = null;
         state.table = null;
       } else {
         state.items = payload.items ?? [];
         state.offerGroups = payload.offerGroups ?? [];
+        state.promoCode = payload.promoCode ?? null;
         state.deliveryZone = payload.deliveryZone ?? null;
         state.table = payload.table ?? null;
       }
@@ -300,6 +338,8 @@ export const {
   removeOfferGroup,
   increaseOfferQuantity,
   decreaseOfferQuantity,
+  setPromoCode,
+  clearPromoCode,
   setDeliveryZone,
   clearDeliveryZone,
   setDineInTable,

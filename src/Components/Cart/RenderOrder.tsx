@@ -54,6 +54,7 @@ import { DeliveryZoneSelector } from "@/src/Components/Cart/DeliveryZones/Delive
 import { DeliverySummaryCard } from "@/src/Components/Cart/DeliveryZones/DeliverySummaryCard";
 import { RestaurantClosedBanner } from "@/src/Components/Cart/RestaurantClosedBanner";
 import type { IDeliveryZoneCardData } from "@/src/Components/Cart/DeliveryZones";
+import PromoCodeInput from "./ShoppingCart/PromoCodeInput";
 
 const RenderOrder = () => {
   const dispatch = useDispatch();
@@ -62,7 +63,7 @@ const RenderOrder = () => {
   const t = useTranslations("cart");
   const { clearTable } = useActiveTable();
 
-  const { items, offerGroups = [], deliveryZone = null, table = null, tax = 0, discount = 0 } =
+  const { items, offerGroups = [], promoCode, deliveryZone = null, table = null, tax = 0, discount = 0 } =
     useSelector((state: RootState) => state.cart);
 
   const isDineIn = table !== null;
@@ -335,7 +336,7 @@ const RenderOrder = () => {
 
     try {
 
-      const result = await createOrder({
+      const payload = {
         customerName: checkoutFields.customerName,
         customerPhone: checkoutFields.phone,
         deliveryAddress: isDineIn ? "" : checkoutFields.address,
@@ -343,13 +344,41 @@ const RenderOrder = () => {
         notes: checkoutFields.notes || undefined,
         items: orderItems,
         offers: orderOffers.length > 0 ? orderOffers : undefined,
+        promoCode: promoCode?.code,
         deliveryZoneId: isDineIn ? null : (deliveryZone?.id ?? null),
         tax,
         discount,
         locale,
         tableId: table?.id ?? null,
         tableNumber: table?.number ?? null,
-      }).unwrap();
+      };
+
+      console.log("[ORDER] Submitting payload:", JSON.stringify({
+        itemCount: payload.items.length,
+        offerCount: payload.offers?.length ?? 0,
+        promoCode: payload.promoCode ?? "(none)",
+        deliveryZoneId: payload.deliveryZoneId ?? "(none)",
+        tax: payload.tax,
+        discount: payload.discount,
+        tableId: payload.tableId ?? "(none)",
+        items: payload.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          basePrice: i.basePrice,
+          hasVariant: !!i.variant,
+          optionCount: i.options?.length ?? 0,
+        })),
+      }, null, 2));
+
+      const result = await createOrder(payload).unwrap();
+
+      console.log("[ORDER] Success response:", JSON.stringify(result, null, 2));
+
+      if (!result?.orderId) {
+        console.error("[ORDER] No orderId in response", result);
+        toast.error(t("errorSomethingWrong"));
+        return;
+      }
 
       // Persist minimal order reference for guest re-access (no PII stored)
       localStorage.setItem(
@@ -362,34 +391,22 @@ const RenderOrder = () => {
       dispatch(clearCart());
       router.push(`/orders/${result.orderId}`);
     } catch (err) {
-      // ── Temporary diagnostic: capture the real backend error ───────────
-      const rtqErr = err as {
-        status?: number | string;
-        data?: unknown;
-        error?: string;
-        message?: string;
-      };
-      console.error("[ORDER CREATE FAILED]", {
-        status: rtqErr.status,
-        data: rtqErr.data,
-        rawError: rtqErr.error ?? rtqErr.message ?? String(err),
-        payload: {
-          itemCount: orderItems.length,
-          offerCount: orderOffers.length,
-          items: orderItems.map((i) => ({
-            productId: i.productId,
-            quantity: i.quantity,
-            basePrice: i.basePrice,
-          })),
-          offers: orderOffers.map((o) => ({
-            offerId: o.offerId,
-            offerType: o.offerType,
-            quantity: o.quantity,
-            productCount: o.products.length,
-          })),
-        },
-      });
-      // ── End diagnostic ────────────────────────────────────────────────
+      // ── Comprehensive error logging ────────────────────────────────────
+      const raw = err as Record<string, unknown>;
+      const errData = raw?.data as Record<string, unknown> | undefined;
+      const errBody = errData?.error as Record<string, unknown> | undefined;
+
+      console.group("[ORDER] CREATE FAILED");
+      console.log("HTTP status:", raw?.status);
+      console.log("raw error:", raw?.error);
+      console.log("raw message:", raw?.message);
+      console.log("response data:", errData);
+      console.log("response data.error:", errBody);
+      console.log("full error object keys:", Object.keys(raw));
+      if (errData) console.log("full data object keys:", Object.keys(errData));
+      console.groupEnd();
+      // ── End error logging ──────────────────────────────────────────────
+
       toast.error(apiErrorMessage(err, t("errorSomethingWrong")));
     } finally {
       setLoading(false);
@@ -399,6 +416,7 @@ const RenderOrder = () => {
     checkoutFields,
     items,
     offerGroups,
+    promoCode,
     deliveryZone,
     zones.length,
     tax,
@@ -506,7 +524,11 @@ const RenderOrder = () => {
               tax={summary.tax}
               discount={summary.discount}
               total={summary.total}
+              promoCode={promoCode}
             />
+
+            {/* Promo Code Input */}
+            <PromoCodeInput cartSubtotal={subtotal} />
 
             {isDineIn && (
               <motion.div

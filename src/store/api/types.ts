@@ -347,6 +347,8 @@ export interface ICreateOrderInput {
   items: ICreateOrderItem[];
   /** Offer transactions — each is ONE logical offer, not individual products. */
   offers?: ICreateOrderOffer[];
+  /** Applied promo code — server revalidates and recalculates. */
+  promoCode?: string;
 }
 
 export interface ICreateOrderResult {
@@ -354,6 +356,40 @@ export interface ICreateOrderResult {
   orderNumber: string;
   customerName: string;
   totalPrice: number;
+}
+
+// ─── Promo Code ────────────────────────────────────────────────────────────
+
+export interface IPromoCodeValidateInput {
+  code: string;
+  phone?: string;
+  cartSubtotal: number;
+}
+
+export type IPromoCodeStatus =
+  | "valid"
+  | "invalid"
+  | "expired"
+  | "not_started"
+  | "disabled"
+  | "exhausted"
+  | "already_used"
+  | "first_order_only"
+  | "minimum_order_not_met";
+
+export interface IPromoCodeValidateResult {
+  status: IPromoCodeStatus;
+  offerId?: string;
+  offerName?: string;
+  offerType?: string;
+  discountType?: string;
+  discountValue?: number;
+  /** Server-computed estimated discount for the given subtotal (preview only). */
+  estimatedDiscount?: number;
+  /** Server message for display. */
+  message?: string;
+  /** Minimum order required (when minimum_order_not_met). */
+  minimumOrder?: number;
 }
 
 // ─── Tables (dine-in / QR) ──────────────────────────────────────────────────

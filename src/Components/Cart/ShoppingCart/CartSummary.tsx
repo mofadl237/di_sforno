@@ -3,9 +3,10 @@
 import { motion } from "framer-motion";
 import { formattePrice } from "@/lib/utils";
 import { summaryVariants } from "./CartAnimations";
-import { Receipt, Truck, Tag, Percent } from "lucide-react";
+import { Receipt, Truck, Tag, Percent, PercentCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AnimatedPrice } from "@/src/Components/Shared/AnimatedPrice";
+import type { ICartPromoCode } from "@/src/store/features/CartSlice";
 
 interface IProps {
   subtotal: number;
@@ -13,6 +14,7 @@ interface IProps {
   tax: number;
   discount: number;
   total: number;
+  promoCode?: ICartPromoCode | null;
 }
 
 interface SummaryRowProps {
@@ -43,7 +45,7 @@ const SummaryRow = ({
   </div>
 );
 
-const CartSummary = ({ subtotal, delivery, tax, discount, total }: IProps) => {
+const CartSummary = ({ subtotal, delivery, tax, discount, total, promoCode }: IProps) => {
   const t = useTranslations("cart");
 
   return (
@@ -96,6 +98,18 @@ const CartSummary = ({ subtotal, delivery, tax, discount, total }: IProps) => {
             label={t("discount")}
             value={`−${formattePrice(discount)}`}
             icon={<Tag className="h-3.5 w-3.5" />}
+            valueClassName="text-accent"
+          />
+        )}
+        {promoCode && (
+          <SummaryRow
+            label={promoCode.code}
+            value={
+              promoCode.estimatedDiscount > 0
+                ? `−${formattePrice(promoCode.estimatedDiscount)}`
+                : t("promoCode.calculatedAtCheckout")
+            }
+            icon={<PercentCircle className="h-3.5 w-3.5" />}
             valueClassName="text-accent"
           />
         )}

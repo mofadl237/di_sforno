@@ -31,6 +31,8 @@ import type {
   IMenuPageResult,
   IOrderDetailPayload,
   IOrderSummaryRow,
+  IPromoCodeValidateInput,
+  IPromoCodeValidateResult,
   IPublicSettings,
   IResolvedTable,
 } from "./types";
@@ -302,7 +304,27 @@ export const publicApi = createApi({
         body,
         params: RESTAURANT_ID ? { restaurantId: RESTAURANT_ID } : {},
       }),
+      transformResponse: (response: IApiResponse<ICreateOrderResult>) => {
+        if (!response.success) return {} as ICreateOrderResult;
+        return response.data;
+      },
       invalidatesTags: ["Orders"],
+    }),
+
+    // ─── Promo Code ──────────────────────────────────────────────────────
+    validatePromoCode: builder.mutation<
+      IPromoCodeValidateResult,
+      IPromoCodeValidateInput
+    >({
+      query: (body) => ({
+        url: "/offers/validate",
+        method: "POST",
+        body: { ...body, restaurantId: RESTAURANT_ID },
+      }),
+      transformResponse: (response: IApiResponse<IPromoCodeValidateResult>) => {
+        if (!response.success) return {} as IPromoCodeValidateResult;
+        return response.data;
+      },
     }),
   }),
 });
@@ -327,6 +349,7 @@ export const {
   useGetOrderByIdQuery,
   useLazyGetOrderByIdQuery,
   useCreateOrderMutation,
+  useValidatePromoCodeMutation,
 } = publicApi;
 
 // Re-export types that components consume from the API layer.

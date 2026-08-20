@@ -6,6 +6,7 @@ import {
   useGetCategoriesQuery,
 } from "@/src/store/api/publicApi";
 import { Hero } from "@/src/Components/Home/Hero";
+import { PromoBanner } from "@/src/Components/Home/PromoBanner";
 import { CategoryRail } from "@/src/Components/Home/CategoryRail";
 import { OffersHorizontalRail } from "@/src/Components/Home/OffersHorizontalRail";
 import { HomeSectionRenderer } from "@/src/Components/Home/HomeSectionRenderer";
@@ -47,6 +48,8 @@ export function HomeClient() {
   return (
     <main className="flex min-h-screen w-full flex-col">
       <Hero />
+
+      <PromoBanner />
 
       {hasCategories && (
         <section className="py-8 md:py-12 lg:py-16">

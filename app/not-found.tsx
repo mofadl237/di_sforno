@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function RootNotFound() {
   return (
     <html lang="en">
@@ -19,7 +21,7 @@ export default function RootNotFound() {
         <p style={{ color: "#6b7280" }}>
           The page you are looking for does not exist.
         </p>
-        <a
+        <Link
           href="/"
           style={{
             marginTop: "1rem",
@@ -31,7 +33,7 @@ export default function RootNotFound() {
           }}
         >
           Back to Home
-        </a>
+        </Link>
       </body>
     </html>
   );
