@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import type { IHomeSection, IHomeProduct } from "@/src/Interfaces";
 import { HorizontalProductRail } from "./HorizontalProductRail";
 import { SectionHeader } from "./SectionHeader";
@@ -18,23 +19,27 @@ const SECTION_EYEBROWS: Record<string, string> = {
   "combo-meals": "Value Deals",
 };
 
+const OFFER_SECTION_KEY = "offers";
+
 interface HomeSectionRendererProps {
-  sections: IHomeSection[];
-  sectionData: SectionData[];
+  orderedSections: IHomeSection[];
+  productSectionData: SectionData[];
+  offerNode?: ReactNode;
 }
 
 export function HomeSectionRenderer({
-  sections,
-  sectionData,
+  orderedSections,
+  productSectionData,
+  offerNode,
 }: HomeSectionRendererProps) {
-  const sorted = [...sections]
-    .filter((s) => s.isActive)
-    .sort((a, b) => a.displayOrder - b.displayOrder);
-
   return (
     <>
-      {sorted.map((section) => {
-        const data = sectionData.find((d) => d.key === section.key);
+      {orderedSections.map((section) => {
+        if (section.key === OFFER_SECTION_KEY) {
+          return offerNode ?? null;
+        }
+
+        const data = productSectionData.find((d) => d.key === section.key);
         if (!data || data.products.length === 0) return null;
 
         return (

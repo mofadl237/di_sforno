@@ -17,6 +17,15 @@ import type { IHomeProduct } from "@/src/Interfaces";
 
 const OFFER_SECTION_KEY = "offers";
 
+const sectionDataMap: Record<string, (home: ReturnType<typeof useGetHomeQuery>["data"]) => IHomeProduct[]> = {
+  "best-sellers": (home) => home?.bestSellers ?? [],
+  "chef-recommendations": (home) => home?.chefRecommendations ?? [],
+  "family-meals": (home) => home?.familyMeals ?? [],
+  "new-items": (home) => home?.newItems ?? [],
+  "kids-meals": (home) => home?.kidsMeals ?? [],
+  "combo-meals": (home) => home?.comboMeals ?? [],
+};
+
 export function HomeClient() {
   const locale = useLocale();
   const tHome = useTranslations("home.categories");
@@ -24,26 +33,23 @@ export function HomeClient() {
   const { data: home } = useGetHomeQuery({ locale });
   const { data: categories = [] } = useGetCategoriesQuery({ locale });
 
-  const allSections = home?.sections ?? [];
-  const bestSellers = home?.bestSellers ?? [];
-
-  const offerSection = allSections.find((s) => s.key === OFFER_SECTION_KEY);
-
-  const nonOfferSections = allSections
-    .filter((s) => s.key !== OFFER_SECTION_KEY && s.isActive)
+  const orderedSections = (home?.sections ?? [])
+    .filter((section) => section.isActive)
     .sort((a, b) => a.displayOrder - b.displayOrder);
 
-  const sectionDataMap: Record<string, IHomeProduct[]> = {
-    "best-sellers": bestSellers,
-  };
-
-  const sectionData = nonOfferSections.map((section) => ({
+  const productSections = orderedSections.filter(
+    (s) => s.key !== OFFER_SECTION_KEY,
+  );
+  const sectionData = productSections.map((section) => ({
     key: section.key,
-    products: sectionDataMap[section.key] ?? [],
+    products: sectionDataMap[section.key]?.(home) ?? [],
   }));
 
+  const offerSection = orderedSections.find(
+    (s) => s.key === OFFER_SECTION_KEY,
+  );
+
   const hasCategories = categories.length > 0;
-  const hasNonOfferSections = sectionData.some((s) => s.products.length > 0);
 
   return (
     <main className="flex min-h-screen w-full flex-col">
@@ -78,19 +84,18 @@ export function HomeClient() {
         </section>
       )}
 
-      {offerSection && (
-        <OffersHorizontalRail
-          sectionName={offerSection.name}
-          sectionSubtitle="Deals and bundles available right now"
-        />
-      )}
-
-      {hasNonOfferSections && (
-        <HomeSectionRenderer
-          sections={nonOfferSections}
-          sectionData={sectionData}
-        />
-      )}
+      <HomeSectionRenderer
+        orderedSections={orderedSections}
+        productSectionData={sectionData}
+        offerNode={
+          offerSection ? (
+            <OffersHorizontalRail
+              sectionName={offerSection.name}
+              sectionSubtitle="Deals and bundles available right now"
+            />
+          ) : undefined
+        }
+      />
 
       <StorySection />
       <FinalCta />

@@ -106,7 +106,7 @@ export const publicApi = createApi({
         },
       }),
       transformResponse: (response: IApiResponse<IHomePayload>) => {
-        if (!response.success) return { bestSellers: [], sections: [], offers: [], branding: { primaryColor: "", logo: "", coverImage: "" } };
+        if (!response.success) return { bestSellers: [], chefRecommendations: [], familyMeals: [], kidsMeals: [], newItems: [], comboMeals: [], sections: [], offers: [], branding: { primaryColor: "", logo: "", coverImage: "" } };
         return response.data;
       },
       providesTags: ["Home"],

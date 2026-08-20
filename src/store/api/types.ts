@@ -147,6 +147,11 @@ export interface IApiAvailability {
 
 export interface IHomePayload {
   bestSellers: IHomeProduct[];
+  chefRecommendations: IHomeProduct[];
+  familyMeals: IHomeProduct[];
+  kidsMeals: IHomeProduct[];
+  newItems: IHomeProduct[];
+  comboMeals: IHomeProduct[];
   sections: IHomeSection[];
   offers: IApiOffer[];
   branding: IBrandingSettings;
