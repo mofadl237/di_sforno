@@ -29,7 +29,10 @@ export function LanguageSwitcher() {
 
   const supportedLanguages = publicSettings?.localization.supportedLanguages;
   const localeOptions = routing.locales.filter(
-    (code) => !supportedLanguages || supportedLanguages.includes(code),
+    (code) =>
+      code === "it" ||
+      !supportedLanguages ||
+      supportedLanguages.includes(code),
   );
 
   if (localeOptions.length < 2) {
