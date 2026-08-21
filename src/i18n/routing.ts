@@ -7,7 +7,7 @@ import { createNavigation } from 'next-intl/navigation';
  * restaurant used to build it (defaults to English).
  */
 export const routing = defineRouting({
-  locales: ['ar', 'en'],
+  locales: ['ar', 'en', 'it'],
   defaultLocale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE === 'ar' ? 'ar' : 'en',
   localePrefix: 'always',
 });

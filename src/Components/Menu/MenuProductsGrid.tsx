@@ -27,7 +27,7 @@ export function MenuProductsGrid({ categoryGroups }: IProps) {
           <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             {category.name}
           </h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-2.5 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-2.5 lg:grid-cols-4 ">
             {products.map((product, index) => (
               <MenuProductCard
                 key={product.id}

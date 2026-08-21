@@ -82,7 +82,8 @@
     "currentLanguage": "Current: English",
     "languages": {
       "en": "English",
-      "ar": "العربية"
+      "ar": "العربية",
+      "it": "Italiano"
     },
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
