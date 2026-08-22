@@ -32,17 +32,6 @@ export function MenuPageClient({
   // Active category tracked by IntersectionObserver — not a URL param
   const [ioCategoryId, setIoCategoryId] = useState("");
 
-  // Representative thumbnail per category (first product image) so the
-  // category rail stays stable regardless of the current filter.
-  const categoryImages = useMemo(() => {
-    const map = new Map<string, string>();
-    products.forEach((product) => {
-      const id = product.category?.id ?? product.categoryId;
-      if (id && !map.has(id)) map.set(id, product.image);
-    });
-    return map;
-  }, [products]);
-
   // Filter by section + search query. Search matches the localized name,
   // description, category name and home-section names (served as keywords).
   const filteredProducts = useMemo(() => {
@@ -141,7 +130,7 @@ export function MenuPageClient({
             categories={categories.map((category) => ({
               id: category.id,
               name: category.name,
-              image: categoryImages.get(category.id),
+              image: category.image ?? undefined,
             }))}
             activeHomeSection={activeSection}
             activeCategoryId={activeCategoryId}

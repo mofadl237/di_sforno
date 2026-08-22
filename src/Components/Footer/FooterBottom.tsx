@@ -62,7 +62,7 @@ export function FooterBottom({ variants }: { variants?: Variants }) {
       className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-border/40 pt-8 sm:flex-row"
     >
       <p className="text-sm font-medium text-muted-foreground">
-        {t("rights", { year: currentYear, name: brandName })}
+        {t("rights", { year: currentYear, name: 'Restora' })}
       </p>
 
       <div className="flex items-center gap-4">
@@ -78,16 +78,16 @@ export function FooterBottom({ variants }: { variants?: Variants }) {
         ))}
       </div>
 
-      {designedByEmail && (
+       
         <p className="text-sm font-medium text-muted-foreground">
           {t.rich("designedBy", {
-            email: designedByEmail,
+            email: 'restaura.dev@gmail.com',
             highlight: (chunks) => (
               <span className="text-primary">{chunks}</span>
             ),
           })}
         </p>
-      )}
+      
     </motion.div>
   );
 }

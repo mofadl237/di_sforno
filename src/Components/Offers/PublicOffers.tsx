@@ -18,7 +18,8 @@ export function PublicOffers() {
   const t = useTranslations("mainSection.offers");
   const { data: offers = [] } = useGetOffersQuery({ locale });
 
-  if (offers.length === 0) return null;
+  // if (offers.length === 0) return null;
+  if (offers.length === 0) return <p className='bg-primary p-4  text-white text-center '>Not Found</p>;
 
   return (
     <section className="py-12 md:py-20 lg:py-28">

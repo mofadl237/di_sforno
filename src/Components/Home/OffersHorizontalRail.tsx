@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "framer-motion";
 import { useGetOffersQuery } from "@/src/store/api/publicApi";
 import { PremiumOfferCard } from "./OfferCard";
 
@@ -76,10 +77,18 @@ export function OffersHorizontalRail({
     };
   }, [isMobile, offers.length, isRTL]);
 
+  
+
   if (offers.length === 0) return null;
 
   return (
-    <section ref={containerRef} className="relative">
+    <motion.section
+      ref={containerRef}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.15 }}
+      className="relative"
+    >
       {/* Section Header */}
       <div className="px-4 pt-12 pb-6 md:px-6 lg:px-12">
         <div className="text-center">
@@ -126,6 +135,6 @@ export function OffersHorizontalRail({
           </div>
         </div>
       )}
-    </section>
+    </motion.section>
   );
 }

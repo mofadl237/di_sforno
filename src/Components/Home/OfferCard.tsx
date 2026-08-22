@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Percent,
@@ -22,6 +22,29 @@ import {
 } from "@/src/lib/offerPricing";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+/**
+ * Reveal variants driven by the parent rail's whileInView observer.
+ *
+ * The card deliberately does NOT observe itself: it lives inside a
+ * GSAP-pinned/transformed ancestor, where per-element IntersectionObserver
+ * gates are unreliable and can strand the card at opacity:0 permanently.
+ * A single stable observer on the outer section propagates "visible"
+ * down; `custom` keeps the capped per-card stagger.
+ */
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.9,
+      ease: [...EASE],
+      delay: Math.min(index * 0.08, 0.32),
+    },
+  }),
+};
 
 function formatEndsAt(iso: string | null, locale: string): string | null {
   if (!iso) return null;
@@ -159,14 +182,8 @@ export function PremiumOfferCard({ offer, index }: OfferCardProps) {
   return (
     <>
       <motion.article
-        initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{
-          duration: 0.9,
-          ease: EASE,
-          delay: Math.min(index * 0.08, 0.32),
-        }}
+        variants={cardVariants}
+        custom={index}
         onClick={() => setDialogOpen(true)}
         className="group relative flex w-[300px] min-w-[300px] snap-start flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-[border-color,box-shadow] duration-300 hover:border-border hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.25)] sm:w-[320px] sm:min-w-[320px] cursor-pointer"
         role="button"
