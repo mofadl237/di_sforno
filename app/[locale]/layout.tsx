@@ -6,10 +6,11 @@ import {
   Playfair_Display,
 } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/src/i18n/routing";
 import { getI18nRuntimeConfig } from "@/src/i18n/config";
+import { getPublicSettings } from "@/src/store/api/server";
 import "../globals.css";
 import { cn } from "@/lib/utils";
 import { MarketingChrome } from "./MarketingChrome";
@@ -33,10 +34,52 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Restaurant",
-  description: "Order your favorite meals online.",
-};
+/**
+ * Tenant metadata, resolved from the Public Restaurant API of the configured
+ * restaurant (`NEXT_PUBLIC_RESTORA_RESTAURANT_ID`) — never hardcoded. The
+ * social share preview (WhatsApp/Facebook/Telegram/…) uses the API's
+ * `branding.coverImage`, falling back to `branding.logo`. Child pages inherit
+ * openGraph/twitter and only override title/description.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const [settings, tCommon, tFooter] = await Promise.all([
+    getPublicSettings(locale),
+    getTranslations({ locale, namespace: "common" }),
+    getTranslations({ locale, namespace: "footer" }),
+  ]);
+
+  const name = settings?.restaurantName?.trim() || tCommon("brandName");
+  const description = tFooter("description");
+  const socialImage =
+    settings?.branding?.coverImage?.trim() || settings?.branding?.logo?.trim() || "";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+
+  return {
+    ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
+    title: name,
+    description,
+    openGraph: {
+      title: name,
+      description,
+      type: "website",
+      siteName: name,
+      locale,
+      ...(siteUrl ? { url: siteUrl } : {}),
+      ...(socialImage ? { images: [{ url: socialImage, alt: name }] } : {}),
+    },
+    twitter: {
+      card: socialImage ? "summary_large_image" : "summary",
+      title: name,
+      description,
+      ...(socialImage ? { images: [socialImage] } : {}),
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const { locales } = await getI18nRuntimeConfig();
