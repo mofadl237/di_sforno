@@ -8,7 +8,7 @@ import { Link } from "@/src/i18n/routing";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { sliderData } from "@/src/data";
-import type { Slide, SlideContent } from "@/src/Interfaces";
+import type { IHomeProduct, Slide, SlideContent } from "@/src/Interfaces";
 
 const AUTOPLAY_DURATION = 5000;
 
@@ -30,7 +30,7 @@ const textContainerVariants = {
   },
 };
 
-export function Hero() {
+export function Hero({ products = [] }: { products?: IHomeProduct[] }) {
   const [[activeIndex, direction], setActiveIndex] = useState([0, 0]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const t = useTranslations("hero");
@@ -45,12 +45,22 @@ export function Hero() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   const slides: Slide[] = useMemo(() => {
+    if (products.length > 0) {
+      return products.map((product, index) => ({
+        id: index + 1,
+        image: product.image,
+        thumbnail: product.image,
+        subtitle: product.category?.name || "",
+        title: product.name,
+        description: product.description,
+      }));
+    }
     const translatedSlides = t.raw("slides") as SlideContent[];
     return sliderData.map((media, index) => ({
       ...media,
       ...translatedSlides[index],
     }));
-  }, [t]);
+  }, [products, t]);
 
   const resetTimeout = useCallback(() => {
     if (timeoutRef.current) {

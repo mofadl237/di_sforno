@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   useGetHomeQuery,
@@ -50,11 +51,30 @@ export function HomeClient() {
     products: sectionDataMap[section.key]?.(home) ?? [],
   }));
 
+  const heroProducts = useMemo(() => {
+    if (!home) return [];
+    const allProducts = [
+      ...(home.bestSellers ?? []),
+      ...(home.chefRecommendations ?? []),
+      ...(home.familyMeals ?? []),
+      ...(home.kidsMeals ?? []),
+      ...(home.newItems ?? []),
+      ...(home.comboMeals ?? []),
+    ];
+    const seen = new Set<string>();
+    const unique = allProducts.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+    return unique.slice(0, 6);
+  }, [home]);
+
   const hasCategories = categories.length > 0;
 
   return (
     <main className="flex min-h-screen w-full flex-col">
-      <Hero />
+      <Hero products={heroProducts} />
 
       <PromoBanner />
 
