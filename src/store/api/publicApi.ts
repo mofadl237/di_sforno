@@ -49,7 +49,8 @@ export const publicApi = createApi({
     // next.config.ts. The API host sends no CORS headers, so cross-origin
     // fetches are blocked by the browser; proxying keeps the browser request
     // same-origin while the server forwards to the Public API.
-baseUrl: `${API_URL}/api/v1/public`,    prepareHeaders: (headers)=> {
+baseUrl: "/api/v1/public",
+   prepareHeaders: (headers)=> {
       if (RESTAURANT_ID) headers.set("x-restaurant-id", RESTAURANT_ID);
       return headers;
     },

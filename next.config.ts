@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_RESTORA_API_URL;
+
+    if (!apiUrl) return [];
+
+    return [
+      {
+        source: "/api/v1/public/:path*",
+        destination: `${apiUrl}/api/v1/public/:path*`,
+      },
+    ];
+  },
 };
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
