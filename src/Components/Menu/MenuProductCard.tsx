@@ -4,6 +4,7 @@ import { AddToCartDialog } from "@/src/Components/Product/AddToCartDialog";
 import { formattePrice, calcMinDisplayPrice } from "@/lib/utils";
 import type { IHomeProduct, IProduct } from "@/src/Interfaces";
 import { motion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { memo, useState } from "react";
@@ -20,6 +21,7 @@ export const MenuProductCard = memo(function MenuProductCard({
   index,
 }: IProps) {
   const t = useTranslations("menu");
+  const tCart = useTranslations("cart");
   const [open, setOpen] = useState(false);
 
   const variants = "variants" in product ? product.variants : undefined;
@@ -61,7 +63,7 @@ export const MenuProductCard = memo(function MenuProductCard({
         </div>
 
         {/* Name + starting price */}
-        <div className="flex flex-1 flex-col justify-between gap-1 px-2.5 pb-2.5 pt-2">
+        <div className="flex flex-1 flex-col justify-between gap-1 px-2.5 pb-1.5 pt-2">
           <p className="line-clamp-1 text-[12.5px] font-semibold leading-snug text-foreground">
             {product.name}
           </p>
@@ -75,6 +77,24 @@ export const MenuProductCard = memo(function MenuProductCard({
               {formattePrice(startingPrice)}
             </span>
           </p>
+        </div>
+
+        {/* Full-width add-to-cart button */}
+        <div className="px-2.5 pb-2.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(true);
+            }}
+            className="group/btn flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-[12px] font-semibold text-primary-foreground shadow-sm transition-[filter,transform] duration-200 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <ShoppingCart
+              className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:-translate-x-0.5"
+              aria-hidden
+            />
+            {tCart("addToCart")}
+          </button>
         </div>
       </motion.article>
 

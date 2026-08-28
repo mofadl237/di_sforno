@@ -15,6 +15,7 @@ import { HomeSectionRenderer } from "@/src/Components/Home/HomeSectionRenderer";
 import { StorySection } from "@/src/Components/Home/StorySection";
 import { FinalCta } from "@/src/Components/Home/FinalCta";
 import { FloatingMenuCta } from "@/src/Components/Shared/FloatingMenuCta";
+import { HomeSkeleton } from "@/src/Components/Home/HomeSkeleton";
 import type { IHomeProduct } from "@/src/Interfaces";
 
 // Offers are rendered independently of home.sections; if a tenant still has
@@ -35,9 +36,11 @@ export function HomeClient() {
   const tHome = useTranslations("home.categories");
   const tOffers = useTranslations("mainSection.offers");
 
-  const { data: home } = useGetHomeQuery({ locale });
-  const { data: categories = [] } = useGetCategoriesQuery({ locale });
-  const { data: offers = [] } = useGetOffersQuery({ locale });
+  const { data: home, isLoading: homeLoading } = useGetHomeQuery({ locale });
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useGetCategoriesQuery({ locale });
+  const { data: offers = [], isLoading: offersLoading } =
+    useGetOffersQuery({ locale });
 
   // Offers are NOT a configurable home section. The public Offers API is the
   // sole authority: the rail renders iff at least one valid offer exists.
@@ -71,6 +74,10 @@ export function HomeClient() {
   }, [home]);
 
   const hasCategories = categories.length > 0;
+
+  if (homeLoading || categoriesLoading || offersLoading) {
+    return <HomeSkeleton />;
+  }
 
   return (
     <main className="flex min-h-screen w-full flex-col">

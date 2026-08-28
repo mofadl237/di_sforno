@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
+const RESTORA_API_URL = process.env.NEXT_PUBLIC_RESTORA_API_URL ?? "";
+
 const nextConfig: NextConfig = {
   output: "standalone",
 
@@ -20,14 +22,11 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_RESTORA_API_URL;
-
-    if (!apiUrl) return [];
-
+    if (!RESTORA_API_URL) return [];
     return [
       {
         source: "/api/v1/public/:path*",
-        destination: `${apiUrl}/api/v1/public/:path*`,
+        destination: `${RESTORA_API_URL}/api/v1/public/:path*`,
       },
     ];
   },

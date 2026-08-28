@@ -4,7 +4,6 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { notFound } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import {
   useGetOrderByIdQuery,
   useGetRestaurantQuery,
@@ -47,9 +46,50 @@ export default function OrderDetailsPage() {
 
   if (!mounted || isLoading || !order || !settings) {
     return (
-      <div className="container marginSection flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-        <span className="sr-only">Loading order</span>
+      <div className="container marginSection" aria-busy="true">
+        {/* Back navigation */}
+        <div className="mb-6 flex items-center gap-3">
+          <div className="h-4 w-20 animate-pulse rounded bg-muted/70" />
+          <span className="h-3 w-1 animate-pulse rounded bg-muted/60" />
+          <div className="h-4 w-16 animate-pulse rounded bg-muted/70" />
+          <div className="ms-auto h-8 w-28 animate-pulse rounded-lg bg-muted/60" />
+        </div>
+
+        {/* Success banner */}
+        <div
+          className="mb-6 h-24 animate-pulse rounded-2xl border border-border/40 bg-card"
+          style={{ animationDelay: "60ms" }}
+        />
+
+        {/* Header */}
+        <div
+          className="mb-6 h-36 animate-pulse rounded-2xl border border-border/40 bg-card"
+          style={{ animationDelay: "120ms" }}
+        />
+
+        {/* Two-column grid */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start xl:grid-cols-[1fr_400px]">
+          <div className="space-y-6">
+            <div
+              className="h-64 animate-pulse rounded-2xl border border-border/40 bg-card"
+              style={{ animationDelay: "180ms" }}
+            />
+            <div
+              className="h-40 animate-pulse rounded-2xl border border-border/40 bg-card"
+              style={{ animationDelay: "240ms" }}
+            />
+          </div>
+          <div className="space-y-6">
+            <div
+              className="h-64 animate-pulse rounded-2xl border border-border/40 bg-card"
+              style={{ animationDelay: "300ms" }}
+            />
+            <div
+              className="h-48 animate-pulse rounded-2xl border border-border/40 bg-card"
+              style={{ animationDelay: "360ms" }}
+            />
+          </div>
+        </div>
       </div>
     );
   }

@@ -7,13 +7,19 @@ import {
   useGetMenuPageQuery,
 } from "@/src/store/api/publicApi";
 import { MenuPageClient } from "./MenuPageClient";
+import { MenuSkeleton } from "./MenuSkeleton";
 
 export default function MenuPage() {
   const locale = useLocale();
 
-  const { data: home } = useGetHomeQuery({ locale });
-  const { data: categories = [] } = useGetCategoriesQuery({ locale });
-  const { data: menuPage } = useGetMenuPageQuery({ locale, page: 1, limit: 100 });
+  const { data: home, isLoading: homeLoading } = useGetHomeQuery({ locale });
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useGetCategoriesQuery({ locale });
+  const { data: menuPage, isLoading: menuLoading } = useGetMenuPageQuery({
+    locale,
+    page: 1,
+    limit: 100,
+  });
 
   const homeSections = (home?.sections ?? []).map((section) => ({
     id: section.id,
@@ -21,6 +27,10 @@ export default function MenuPage() {
     name: section.name,
   }));
   const products = menuPage?.items ?? [];
+
+  if (homeLoading || categoriesLoading || menuLoading) {
+    return <MenuSkeleton />;
+  }
 
   return (
     <MenuPageClient
